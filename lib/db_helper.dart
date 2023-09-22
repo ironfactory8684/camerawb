@@ -44,7 +44,8 @@ class DBHelper {
   Future select() async {
     final db =await _openDb();
     List<Map> maps = await db.query('wbFiles',
-        where: "date(created_at) = DATE('now')",
+        where: "strftime('%Y',created_at) = strftime('%Y',date('now')) and strftime('%m',created_at) = strftime('%m',date('now'))",
+
         // whereArgs: [id]
     );
     return maps;

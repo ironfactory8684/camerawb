@@ -57,7 +57,7 @@ class UtilMediaPreview extends StatelessWidget {
           return Image(
             fit: BoxFit.cover,
             image: FileImage(
-              File(mediaCapture.filePath),
+              File(mediaCapture.captureRequest.when(single: (single)=>single.file!.path)),
             ),
           );
         } else {

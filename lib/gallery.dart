@@ -5,6 +5,8 @@ import 'package:photo_gallery/photo_gallery.dart';
 import 'package:photo_gallery/photo_gallery.dart';
 import 'package:transparent_image/transparent_image.dart';
 
+import 'list_photo_views.dart';
+
 class ScreenGallery extends StatefulWidget {
   const ScreenGallery({Key? key}) : super(key: key);
 
@@ -16,7 +18,9 @@ class _ScreenGalleryState extends State<ScreenGallery> {
 
   List<Album> imageAlbums =[];
   bool boolIsLoading = true;
+  bool isGrid = true;
   List<Medium> _media =[];
+
   @override
   void initState() {
     // TODO: implement initState
@@ -96,49 +100,84 @@ class _ScreenGalleryState extends State<ScreenGallery> {
   @override
   Widget build(BuildContext context) {
 
-    print(_media[0].filename);
     if(boolIsLoading){
       return Center(
         child: CircularProgressIndicator(),
       );
     }
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(onPressed: (){
+            setState(() {
+              isGrid = !isGrid;
+            });
+          }, icon: Icon(isGrid?Icons.menu:Icons.grid_view))
+        ],
+      ),
       body: SafeArea(
-        child: GridView.count(
-          crossAxisCount: 3,
-          mainAxisSpacing: 1.0,
-          crossAxisSpacing: 1.0,
-          children:
-            _media.map((medium) => Stack(
-              fit: StackFit.expand,
-              alignment: Alignment.bottomCenter,
-              children: [
-                GestureDetector(
-                  // onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  //     builder: (context) => ViewerPage(medium))),
-                  child: Container(
-                    color: Colors.grey[300],
-                    child: FadeInImage(
-                      fit: BoxFit.cover,
-                      placeholder: MemoryImage(kTransparentImage),
-                      image: ThumbnailProvider(
-                        mediumId: medium.id,
-                        mediumType: medium.mediumType,
-                        highQuality: true,
-                      ),
-                    ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child:
+          isGrid?
+          GridView.count(
+            crossAxisCount: 3,
+            mainAxisSpacing: 2.0,
+            crossAxisSpacing: 2.0,
+            children: _media.map((medium) => GestureDetector(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) =>
+                        ListPhotoViews(
+                          photoDatList: [medium], index: 0,)));
+              },
+              child: Column(
+                children: [
+                  SizedBox(
+                      height: 80,
+                      child:  Container(
+                        color: Colors.grey[300],
+                        child: FadeInImage(
+                          fit: BoxFit.cover,
+                          placeholder: MemoryImage(kTransparentImage),
+                          image: ThumbnailProvider(
+                            mediumId: medium.id,
+                            mediumType: medium.mediumType,
+                            highQuality: true,
+                          ),
+                        ),
+                      ),),
+                  Text(medium.filename!,maxLines: 1,)
+                ],
+              ))).toList(),
+          ):
+          ListView.builder(itemBuilder: (ctx,idx){
+            return ListTile(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) =>
+                        ListPhotoViews(
+                          photoDatList: [_media[idx]], index: 0,)));
+              },
+              leading:Container(
+                height: 80,
+                child: FadeInImage(
+                  fit: BoxFit.cover,
+                  placeholder: MemoryImage(kTransparentImage),
+                  image: ThumbnailProvider(
+                    mediumId: _media[idx].id,
+                    mediumType: _media[idx].mediumType,
+                    highQuality: true,
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  alignment: Alignment.bottomCenter,
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.3)),
-                  child: Text(medium.filename!),
-
-                )
-              ],
-            )).toList()
-
+              ),
+              title: Container(
+                padding: EdgeInsets.all(10),
+                alignment: Alignment.bottomCenter,
+                child: Text(_media[idx].filename!),
+              ),
+            );
+          },itemCount: _media.length,),
         ),
       ),
     );
